@@ -144,18 +144,22 @@ function App() {
         <div className="pokedex-right">
           {token ? (
             <>
-              <button className="logout-button" onClick={handleLogout}>
-                Logout
-              </button>
-              <input
-                type="text"
-                placeholder="Search Pokémon"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="search-input"
-              />
+              <div className="pokedex-right-header">
+                <button className="logout-button" onClick={handleLogout}>
+                  Logout
+                </button>
+                <input
+                  type="text"
+                  placeholder="Search Pokémon"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="search-input"
+                />
+              </div>
               <div className="pokemon-list">
-                {filteredPokemon.length > 0 ? (
+                {isLoading ? (
+                  <p>Loading...</p>
+                ) : filteredPokemon.length > 0 ? (
                   filteredPokemon.map((p) => (
                     <div
                       key={`${p.id}-${p.name.english}`}
