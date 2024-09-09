@@ -105,7 +105,14 @@ function App() {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
+    if (e.target.value === "") {
+      setFilteredPokemon(pokemon);
+    } else {
+      const filtered = pokemon.filter((p) =>
+        p.name.english.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+      setFilteredPokemon(filtered);
+    }
   };
 
   const handleNextPage = () => {
@@ -117,6 +124,29 @@ function App() {
   const handlePrevPage = () => {
     if (currentPage > 1) {
       fetchPokemon(currentPage - 1);
+    }
+  };
+
+  const handlePokemonSearch = async (name) => {
+    try {
+      const response = await axios.get(`${API_URL}/pokemon/name/${name}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedPokemon(response.data);
+    } catch (error) {
+      console.error("Error fetching Pokémon details:", error);
+      if (error.response && error.response.status === 404) {
+        alert("Pokémon not found");
+      } else {
+        alert("Error fetching Pokémon details");
+      }
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchTerm) {
+      handlePokemonSearch(searchTerm);
     }
   };
 
@@ -175,13 +205,18 @@ function App() {
                 <button className="logout-button" onClick={handleLogout}>
                   Logout
                 </button>
-                <input
-                  type="text"
-                  placeholder="Search Pokémon"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="search-input"
-                />
+                <form onSubmit={handleSearchSubmit} className="search-form">
+                  <input
+                    type="text"
+                    placeholder="Search Pokémon"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="search-input"
+                  />
+                  <button type="submit" className="search-button">
+                    Search
+                  </button>
+                </form>
               </div>
               <div className="pokemon-list">
                 {isLoading ? (
