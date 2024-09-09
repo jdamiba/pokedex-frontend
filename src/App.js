@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_URL = "http://localhost:3000/api";
-const IMAGE_URL = "http://localhost:3000/images";
+const API_URL = "https://pokedex-api-p7m0.onrender.com/api";
+const IMAGE_URL = "https://pokedex-api-p7m0.onrender.com/images";
 
 function App() {
   const [pokemon, setPokemon] = useState([]);
@@ -14,6 +14,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const fetchPokemon = useCallback(async (page = 1) => {
     setIsLoading(true);
@@ -57,16 +59,41 @@ function App() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoggingIn(true);
+    const username = e.target.username.value;
+    const password = e.target.password.value;
+    console.log("Attempting login with:", { username, password });
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
-        username: e.target.username.value,
-        password: e.target.password.value,
+        username,
+        password,
       });
       const newToken = response.data.token;
       setToken(newToken);
       localStorage.setItem("token", newToken);
+      console.log("Login successful");
+      setLoginError(""); // Clear any previous error messages
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error(
+        "Login failed:",
+        error.response ? error.response.data : error.message
+      );
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setLoginError(`Login failed: ${error.response.data.message}`);
+      } else if (error.response && error.response.status === 500) {
+        setLoginError("Server error. Please try again later.");
+      } else {
+        setLoginError(
+          "Login failed. Please check your credentials and try again."
+        );
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -202,6 +229,7 @@ function App() {
             </>
           ) : (
             <div className="login-form">
+              {loginError && <p className="error-message">{loginError}</p>}
               <form onSubmit={handleLogin}>
                 <input
                   type="text"
@@ -215,7 +243,9 @@ function App() {
                   placeholder="Password"
                   required
                 />
-                <button type="submit">Login</button>
+                <button type="submit" disabled={isLoggingIn}>
+                  {isLoggingIn ? "Logging in..." : "Login"}
+                </button>
               </form>
             </div>
           )}

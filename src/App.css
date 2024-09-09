@@ -493,3 +493,9 @@ body, html {
 }
 
 /* ... rest of the existing styles ... */
+
+.error-message {
+  color: #ff0000;
+  margin-bottom: 10px;
+  text-align: center;
+}
